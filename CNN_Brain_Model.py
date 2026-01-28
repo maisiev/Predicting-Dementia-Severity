@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 # Run in Bash: export TF_METAL_DISABLE=1
 
 #Force TensorFlow into single-threaded, non-XLA mode to work on MacOS
@@ -27,10 +21,10 @@ from sklearn.utils.class_weight import compute_class_weight
 # =====================
 # Paths and parameters
 # =====================
-PATH = '/Users/maisievarcoe/Desktop/AI/Coursework/images/Originals'
+PATH = "/content/drive/MyDrive/AI_Coursework/images/Originals"
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 16
-EPOCHS = 50
+EPOCHS = 80
 SEED = 42
 
 # =====================
@@ -82,9 +76,9 @@ val_ds = tf.keras.utils.image_dataset_from_directory(
 # =====================
 data_augmentation = Sequential([
     layers.RandomFlip("horizontal"),
-    layers.RandomRotation(0.05),
-    layers.RandomContrast(0.1),
-    layers.RandomZoom(0.1)
+    layers.RandomRotation(0.03),
+    layers.RandomContrast(0.05),
+    layers.RandomZoom(0.05)
 ])
 
 def preprocess_train(x, y):
@@ -135,10 +129,14 @@ model = Sequential([
     layers.Conv2D(128, 3, activation="relu", padding="same"),
     layers.BatchNormalization(),
     layers.MaxPooling2D(),
+    
+    layers.Conv2D(256, 3, activation="relu", padding="same"),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D(),
 
     layers.GlobalAveragePooling2D(),
-    layers.Dense(128, activation="relu"),
-    layers.Dropout(0.5),
+    layers.Dense(256, activation="relu"),
+    layers.Dropout(0.3),
 
     layers.Dense(num_classes, activation="softmax")
 ])
@@ -146,7 +144,7 @@ model = Sequential([
 
 model.compile(
     optimizer=Adam(1e-4),
-    loss="sparse_categorical_crossentropy",
+    loss=tf.keras.losses.SparseCategoricalCrossentropy(label_smoothing=0.1),
     metrics=["accuracy"]
 )
 
@@ -157,7 +155,7 @@ model.summary()
 # =====================
 early_stop = EarlyStopping(
     monitor="val_loss",
-    patience=10,
+    patience=15,
     restore_best_weights=True
 )
 
@@ -184,10 +182,3 @@ history = model.fit(
 # =====================
 model.save("cnn_brain_model.h5")
 print("✅ Model saved as cnn_brain_model.h5")
-
-
-# In[ ]:
-
-
-
-
